@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SoulPalm AI ✨</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+min-height:100vh;
+overflow-x:hidden;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+background:linear-gradient(135deg,#dff7f2,#f7e7ff,#fff5dd);
+background-size:400% 400%;
+animation:bgMove 14s ease infinite;
+position:relative;
+
+font-family:
+'Poppins',
+'Segoe UI Emoji',
+'Apple Color Emoji',
+sans-serif;
+}
+
+/* background */
+
+@keyframes bgMove{
+
+0%{
+background-position:0% 50%;
+}
+
+50%{
+background-position:100% 50%;
+}
+
+100%{
+background-position:0% 50%;
+}
+
+}
+
+/* floating emojis */
+
+.emoji{
+position:fixed;
+bottom:-80px;
+pointer-events:none;
+z-index:0;
+opacity:0.9;
+animation:floatUp linear forwards;
+will-change:transform;
+}
+
+@keyframes floatUp{
+
+0%{
+transform:translateY(0) rotate(0deg);
+opacity:0;
+}
+
+10%{
+opacity:1;
+}
+
+100%{
+transform:translateY(-130vh) rotate(360deg);
+opacity:0;
+}
+
+}
+
+/* container */
+
+.container{
+width:100%;
+max-width:500px;
+background:rgba(255,255,255,0.22);
+backdrop-filter:blur(18px);
+padding:28px;
+border-radius:34px;
+box-shadow:0 10px 40px rgba(0,0,0,0.12);
+border:1px solid rgba(255,255,255,0.3);
+position:relative;
+z-index:2;
+animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+
+from{
+opacity:0;
+transform:translateY(20px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
+}
+
+.title{
+text-align:center;
+font-size:34px;
+font-weight:700;
+color:#65577d;
+margin-bottom:10px;
+}
+
+.subtitle{
+text-align:center;
+font-size:14px;
+line-height:1.9;
+color:#666;
+margin-bottom:25px;
+}
+
+.guide{
+background:rgba(255,255,255,0.3);
+padding:18px;
+border-radius:22px;
+margin-bottom:20px;
+}
+
+.guide h3{
+font-size:17px;
+color:#6d5d86;
+margin-bottom:10px;
+}
+
+.guide p{
+font-size:13px;
+line-height:1.9;
+color:#666;
+}
+
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:18px;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:0.3s;
+margin-top:15px;
+font-family:'Poppins',sans-serif;
+}
+
+button:hover{
+transform:scale(1.03);
+}
+
+.camera-btn{
+background:linear-gradient(to right,#b993ff,#8ca6ff);
+color:white;
+box-shadow:0 5px 20px rgba(140,166,255,0.35);
+}
+
+.scan-btn{
+background:linear-gradient(to right,#ff9acb,#ffc371);
+color:white;
+box-shadow:0 5px 20px rgba(255,170,120,0.35);
+}
+
+video{
+width:100%;
+border-radius:22px;
+margin-top:20px;
+display:none;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+canvas{
+display:none;
+}
+
+.preview{
+margin-top:22px;
+text-align:center;
+}
+
+.preview img{
+width:220px;
+height:220px;
+object-fit:cover;
+border-radius:26px;
+border:4px solid rgba(255,255,255,0.4);
+box-shadow:0 8px 25px rgba(0,0,0,0.12);
+}
+
+.scan-box{
+margin-top:20px;
+height:12px;
+background:rgba(255,255,255,0.35);
+border-radius:20px;
+overflow:hidden;
+display:none;
+}
+
+.scan-line{
+height:100%;
+width:0%;
+background:linear-gradient(to right,#a18cd1,#fbc2eb);
+animation:scan 3s linear forwards;
+}
+
+@keyframes scan{
+
+0%{
+width:0%;
+}
+
+100%{
+width:100%;
+}
+
+}
+
+.status{
+margin-top:15px;
+text-align:center;
+font-size:14px;
+font-weight:500;
+color:#6c5c85;
+}
+
+.aura{
+margin-top:15px;
+text-align:center;
+font-size:15px;
+font-weight:600;
+color:#6f5f88;
+}
+
+.identity{
+margin-top:10px;
+text-align:center;
+font-size:13px;
+color:#888;
+}
+
+.tabs{
+display:flex;
+gap:10px;
+margin-top:24px;
+}
+
+.tab-btn{
+flex:1;
+padding:12px;
+border:none;
+border-radius:16px;
+background:rgba(255,255,255,0.35);
+font-size:13px;
+font-weight:600;
+cursor:pointer;
+transition:0.4s;
+color:#6a5a83;
+}
+
+.tab-btn.active{
+
+background:linear-gradient(to right,#c2a8ff,#ffc8dd);
+color:white;
+transform:scale(1.05);
+box-shadow:0 0 20px rgba(194,168,255,0.6);
+
+}
+
+.result{
+margin-top:22px;
+background:rgba(255,255,255,0.3);
+padding:24px;
+border-radius:26px;
+line-height:2;
+font-size:15px;
+color:#555;
+min-height:340px;
+text-align:left;
+overflow-y:auto;
+scroll-behavior:smooth;
+
+word-wrap:break-word;
+overflow-wrap:break-word;
+white-space:normal;
+
+opacity:0;
+transform:translateY(10px);
+transition:0.5s;
+}
+
+.result.show{
+opacity:1;
+transform:translateY(0);
+}
+
+#resultText span{
+animation:fadeLetter 0.3s ease;
+}
+
+@keyframes fadeLetter{
+
+from{
+opacity:0;
+filter:blur(4px);
+}
+
+to{
+opacity:1;
+filter:blur(0px);
+}
+
+}
+
+/* mobile */
+
+@media(max-width:600px){
+
+body{
+padding:12px;
+align-items:flex-start;
+}
+
+.container{
+padding:20px;
+border-radius:28px;
+margin-top:20px;
+}
+
+.title{
+font-size:28px;
+}
+
+.subtitle{
+font-size:13px;
+}
+
+.preview img{
+width:180px;
+height:180px;
+}
+
+.result{
+font-size:14px;
+min-height:300px;
+line-height:1.9;
+padding:20px;
+}
+
+.tabs{
+flex-direction:column;
+}
+
+button{
+font-size:15px;
+padding:14px;
+}
+
+.guide p{
+font-size:12px;
+}
+
+}
+
+@media(max-width:400px){
+
+.title{
+font-size:24px;
+}
+
+.preview img{
+width:160px;
+height:160px;
+}
+
+.result{
+font-size:13px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="title">🔮 SoulPalm AI</div>
+
+<div class="subtitle">
+Your palm may reveal your personality, emotional energy, future path, and spiritual guidance ✨
+</div>
+
+<div class="guide">
+
+<h3>✨ Palm Scan Guide</h3>
+
+<p>
+• Show your full palm including fingers and wrist<br>
+• Keep fingers clearly visible and slightly separated<br>
+• Use soft lighting for better reading<br>
+• Avoid blur or dark shadows 🌸
+</p>
+
+</div>
+
+<button class="camera-btn" onclick="startCamera()">
+📷 Open Camera
+</button>
+
+<video id="video" autoplay playsinline></video>
+
+<button class="scan-btn" onclick="scanPalm()">
+✨ Capture & Analyze Palm
+</button>
+
+<canvas id="canvas"></canvas>
+
+<div class="preview" id="preview"></div>
+
+<div class="scan-box" id="scanBox">
+<div class="scan-line"></div>
+</div>
+
+<div class="status" id="statusText"></div>
+
+<div class="aura" id="auraText"></div>
+
+<div class="identity" id="identityText"></div>
+
+<div class="tabs">
+
+<button class="tab-btn active"
+onclick="showSection('personality',this)">
+🧠 Personality
+</button>
+
+<button class="tab-btn"
+onclick="showSection('future',this)">
+🔮 Future
+</button>
+
+<button class="tab-btn"
+onclick="showSection('guidance',this)">
+🌸 Guidance
+</button>
+
+</div>
+
+<div class="result show">
+<div id="resultText">
+Your emotional reading will appear here ✨
+</div>
+</div>
+
+</div>
+
+<script>
+
+/* SAFE MOBILE EMOJIS */
+
+const emojis=["✨","🌸","💖","🌙","🤍","🌷"];
+
+/* FLOATING EMOJIS */
+
+function createEmoji(){
+
+const emoji=document.createElement("div");
+
+emoji.classList.add("emoji");
+
+emoji.innerHTML=
+emojis[Math.floor(Math.random()*emojis.length)];
+
+emoji.style.left=Math.random()*100+"vw";
+
+emoji.style.fontSize=
+(Math.random()*16+18)+"px";
+
+emoji.style.animationDuration=
+(Math.random()*4+7)+"s";
+
+document.body.appendChild(emoji);
+
+setTimeout(()=>{
+emoji.remove();
+},12000);
+
+}
+
+setInterval(createEmoji,1000);
+
+/* CAMERA */
+
+const video=document.getElementById("video");
+
+async function startCamera() {
+  try {
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Camera not supported in this browser ❌");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" } // better compatibility than strict "environment"
+      },
+      audio: false
+    });
+
+    video.srcObject = stream;
+
+    video.style.display = "block";
+
+    await video.play();
+
+  } catch (err) {
+
+    console.log("Camera Error:", err);
+
+    if (err.name === "NotAllowedError") {
+      alert("Camera permission blocked by browser ❌");
+    } 
+    else if (err.name === "NotFoundError") {
+      alert("No camera found on device ❌");
+    } 
+    else if (err.name === "NotReadableError") {
+      alert("Camera already in use ❌");
+    } 
+    else {
+      alert("Camera failed to open ❌ Try again");
+    }
+
+  }
+}
+
+/* MEDIAPIPE */
+
+const hands=new Hands({
+
+locateFile:(file)=>{
+return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+}
+
+});
+
+hands.setOptions({
+
+maxNumHands:1,
+modelComplexity:1,
+minDetectionConfidence:0.7,
+minTrackingConfidence:0.7
+
+});
+
+let detectedLandmarks=null;
+
+hands.onResults(results=>{
+
+if(results.multiHandLandmarks &&
+results.multiHandLandmarks.length>0){
+
+detectedLandmarks=
+results.multiHandLandmarks[0];
+
+}
+
+});
+
+/* TEXTS */
+
+let personalityText="";
+let futureText="";
+let guidanceText="";
+
+/* SCAN */
+
+async function scanPalm(){
+
+if(video.style.display==="none"){
+
+alert("Please open camera first ✨");
+return;
+
+}
+
+document.getElementById("scanBox").style.display="block";
+
+document.getElementById("statusText").innerHTML=
+"✨ Reading your emotional palm energy...";
+
+await hands.send({image:video});
+
+const canvas=document.getElementById("canvas");
+
+const ctx=canvas.getContext("2d");
+
+canvas.width=video.videoWidth;
+canvas.height=video.videoHeight;
+
+ctx.drawImage(video,0,0);
+
+const image=canvas.toDataURL("image/png");
+
+document.getElementById("preview").innerHTML=
+`<img src="${image}">`;
+
+if(!detectedLandmarks){
+
+setTimeout(()=>{
+
+typeEffect(
+"Please show your full palm clearly including fingers and wrist for a better soul reading 🌸"
+);
+
+},3000);
+
+return;
+
+}
+
+/* landmark analysis */
+
+const thumbTip=detectedLandmarks[4];
+const indexTip=detectedLandmarks[8];
+const middleTip=detectedLandmarks[12];
+const pinkyTip=detectedLandmarks[20];
+const wrist=detectedLandmarks[0];
+
+const fingerSpread=
+Math.abs(indexTip.x-pinkyTip.x);
+
+const middleLength=
+Math.abs(wrist.y-middleTip.y);
+
+const thumbDistance=
+Math.abs(thumbTip.x-indexTip.x);
+
+/* aura */
+
+let aura="";
+
+/* personality types */
+
+if(fingerSpread>0.35){
+
+aura="💖 Aura: Freedom & Creative Energy";
+
+personalityText=
+`Your palm structure reflects a deeply independent and emotionally expressive personality 🌸✨. You naturally dislike emotional limitations and feel happiest in places where you can freely express your thoughts, creativity, emotions, and dreams 🤍. Even if you appear calm on the outside, your inner world carries deep imagination, emotional sensitivity, and many unspoken feelings 🌙.
+
+You are likely someone who becomes emotionally attached to meaningful memories, caring people, emotional words, and small moments that others may easily forget ✨. Your heart remembers emotional energy very deeply. Even small acts of kindness may stay inside your heart for a long time 🌷.
+
+Your palm also shows a naturally creative and comforting soul 💖. People around you may quietly feel emotionally safe with you because your energy feels warm, understanding, and peaceful 🌸. You may naturally enjoy beauty, music 🎶, makeup 💄, soft environments, emotional conversations ☕, or creative things because your soul connects deeply with emotional comfort and aesthetics ✨.
+
+Sometimes you may pretend to be emotionally okay even when your heart feels heavy 🌧️. You may silently overthink situations, replay emotional memories, or become emotionally affected by people's behaviour more than you show outside 🤍. But your palm shows emotional resilience. Even after emotional pain or disappointment, your heart slowly heals and continues moving forward with quiet strength 🌙✨`;
+
+futureText=
+`The future energy surrounding your palm suggests a strong emotional and personal transformation slowly entering your life 🌸✨. A stressful or emotionally confusing phase that has been mentally exhausting you may gradually begin fading away. Your mind may slowly start feeling lighter, calmer, and emotionally more stable in the coming months 🤍.
+
+Your future also carries signs of progress connected to studies 📚, career 💼, creativity 🎨, or personal dreams 🌷. Something that once felt delayed or emotionally impossible may unexpectedly begin moving in a positive direction ✨. Your palm suggests that your hard work and emotional patience may slowly start giving meaningful results.
+
+Your future work environment may become emotionally healthier than before 🌙. You may slowly move towards people who understand your value better and appreciate your emotional effort instead of draining your energy 🌸. New friendships or emotional connections may also enter your life unexpectedly, bringing emotional comfort and peaceful support ✨.
+
+Your relationship energy looks emotionally beautiful 💖. Your future partner may be emotionally understanding, mentally calming, supportive, gentle, and emotionally mature 🤍. Instead of emotional confusion, this connection may bring peace, emotional safety, and genuine care into your life 🌷.
+
+However, your palm also gently warns you to be careful about emotionally trusting people too quickly 🌧️. Your soft heart may sometimes ignore red flags because you naturally want to see goodness in people. Protect your emotional peace carefully and avoid people who repeatedly make your heart feel emotionally tired 🌙.
+
+Overall, your future strongly carries signs of emotional healing, meaningful growth, peaceful happiness, stronger confidence, emotional freedom, and a fresh beginning ✨🌸`;
+
+guidanceText=
+`Your emotions strongly influence your decisions 🌙, and your palm gently reminds you that protecting your emotional peace should become one of your biggest priorities now 🤍. Sometimes you may give too much emotional energy to people who do not value your softness properly 🌧️. Your heart naturally wants to care deeply, help emotionally, and understand others, but constantly carrying other people's emotional weight may slowly exhaust your own soul.
+
+Your palm gently advises you to stop ignoring your own emotional needs 🌸. You also deserve care, emotional peace, reassurance, rest, and understanding ✨. Do not always wait for others to emotionally choose you. Sometimes your biggest emotional growth begins when you start choosing yourself first 🤍.
+
+You may also have a habit of overthinking emotional situations silently 🌙. Small emotional disappointments may stay inside your mind longer than necessary. Try not to emotionally punish yourself for things outside your control 🌧️. Some situations are not your responsibility to fix.
+
+Spend more time with things that emotionally refresh your soul 🌷✨. Listen to peaceful music 🎶, enjoy creative hobbies 🎨, take care of yourself 💄, rest properly, and spend time in emotionally calming environments ☕. Your energy heals faster when your surroundings feel emotionally peaceful.
+
+Your palm also shows strong emotional intuition ✨. Many times, your heart already knows when something feels emotionally wrong before your mind fully understands it 🌙. Trust your inner feelings more gently instead of constantly doubting yourself 🤍.
+
+This phase of your life is teaching you self-worth, emotional balance, inner healing, and peaceful growth 🌸. One day, you may look back and realize that the moments which emotionally hurt you also helped you become emotionally wiser, stronger, softer, and more beautiful inside ✨💖`;
+
+}
+
+else if(middleLength>0.45){
+
+aura="🌙 Aura: Deep Emotional Intuition";
+
+personalityText=
+`Your palm reflects emotional intelligence, sensitivity, and a naturally observant personality 🌙✨. You are likely someone who quietly notices even the smallest emotional changes around you 🤍. Instead of reacting immediately, your mind silently analyzes situations deeply before expressing feelings. Because of this, your presence feels calm, emotionally mature, and mentally comforting 🌸.
+
+Your emotional energy shows patience, empathy, and quiet wisdom ✨. Many people may feel emotionally safe around you because your words and behaviour naturally carry understanding and emotional warmth 🤍. Even during emotionally difficult phases, your soul continues moving forward quietly with strength 🌷.
+
+You may sometimes hide emotional pain behind silence 🌧️. Your palm suggests that you often try to remain emotionally strong even when your heart feels mentally tired. Small emotional disappointments may affect you deeply, but you rarely show the full depth of your emotions to others 🌙.
+
+Your hand energy also suggests creativity, emotional maturity, and peaceful intelligence ✨. You may naturally enjoy calm conversations ☕, emotional music 🎶, thoughtful environments, peaceful places, or emotionally meaningful relationships because your soul deeply values emotional connection over superficial attention 🌸`;
+
+futureText=
+`Your future energy indicates gradual emotional healing and meaningful personal transformation 🌸✨. A stressful emotional phase that has been mentally exhausting you may slowly begin ending, allowing your mind to feel emotionally lighter and more peaceful 🌙.
+
+Your future also carries positive energy connected to studies 📚, career 💼, creativity 🎨, and personal ambitions ✨. Something you have been emotionally waiting for patiently may slowly begin moving towards success. Your palm suggests that emotional patience and quiet consistency may help you achieve meaningful growth in the future 🌷.
+
+Your future work or study environment may slowly become emotionally more stable 🤍. You may meet supportive people who emotionally understand your calm nature and appreciate your intelligence instead of misunderstanding your silence 🌸.
+
+Your relationship future also appears emotionally peaceful ✨. Your future partner may emotionally understand your sensitive heart, respect your emotions, and bring calmness instead of emotional confusion 🌙. This connection may feel emotionally safe, supportive, and mentally healing.
+
+Your palm also gently warns you not to carry emotional burdens alone for too long 🌧️. If you continue silently absorbing stress from others, your emotional energy may slowly become exhausted. Protect your peace carefully and avoid emotionally one-sided relationships 🤍.
+
+Overall, your future strongly shows emotional healing, self-confidence, peaceful relationships, meaningful growth, emotional maturity, and a calmer life path 🌸✨`;
+
+guidanceText=
+`Your emotional sensitivity is one of your biggest strengths 🌙✨, but your palm gently reminds you that not every emotional burden belongs to you 🤍. Sometimes you may absorb stress, sadness, or emotional negativity from people around you too deeply, even when it is not your responsibility 🌧️.
+
+You may also have a habit of silently carrying emotional pain alone 🌸. Your soul naturally tries to remain emotionally mature and understanding, but constantly suppressing your emotions may slowly make your heart feel emotionally heavy. Your feelings also deserve attention, comfort, and healing ✨.
+
+Your palm advises you to stop overthinking situations that are outside your control 🌙. Not every emotional disappointment needs to stay inside your mind forever 🌧️. Some people may never fully understand your emotional depth, and that is okay. Do not reduce your worth simply because others fail to understand your softness 🤍.
+
+Spend more time doing things that emotionally refresh your energy 🌷✨. Peaceful environments, music 🎶, emotional rest, meaningful conversations ☕, creativity 🎨, and self-care may help your mind feel emotionally balanced again 🌸.
+
+Your palm also shows strong intuition 🌙. Many times, your heart already senses the truth before situations fully unfold ✨. Trust your emotional wisdom more gently instead of constantly doubting yourself 🤍.
+
+This phase of your life is slowly teaching you emotional balance, peaceful boundaries, inner healing, and self-worth 🌸✨. Your future becomes brighter when your heart learns that protecting your peace is not selfish — it is necessary 💖`;
+
+}
+
+else{
+
+aura="🌙 Aura: Calm Spiritual Energy";
+
+personalityText=
+`Your palm reflects calmness, emotional balance, and a quietly strong personality 🌙✨. You are likely someone who naturally prefers peace over unnecessary conflict and values emotional stability deeply 🤍. Even when life becomes emotionally difficult, your mind still tries to remain calm, patient, and emotionally mature 🌸.
+
+Your emotional energy shows patience, resilience, and inner strength ✨. You may not always openly express your feelings, but your emotional endurance is much stronger than most people realize 🌷. People around you may quietly see you as emotionally dependable, trustworthy, comforting, and mentally calming 🤍.
+
+Your palm also reflects spiritual calmness and emotional stability 🌙. You may naturally dislike emotional drama, toxic environments, or emotionally chaotic people 🌧️. Instead, your soul feels happiest around peaceful conversations ☕, emotionally safe people, calm environments, and simple meaningful moments ✨.
+
+Sometimes you may silently carry emotional pain without expressing it fully 🌸. Your palm suggests that you often try protecting others emotionally while quietly hiding your own struggles inside. Even when emotionally tired, you still continue moving forward with quiet strength 🌙✨`;
+
+futureText=
+`The future energy in your palm suggests that your life may slowly move towards greater emotional balance, peace, and personal stability 🌸✨. A difficult or emotionally draining phase may gradually become easier, allowing your heart to feel calmer and emotionally safer again 🤍.
+
+Your future path also shows slow but meaningful progress connected to studies 📚, work 💼, finances, personal goals, or emotional healing 🌷. Even if your growth feels delayed now, your future still carries peaceful positive movement ✨. Your emotional patience may slowly begin bringing stable results.
+
+Your future environment may also become emotionally healthier 🌙. You may slowly distance yourself from emotionally draining situations and move towards calmer, more supportive people 🌸. New emotional connections or friendships may enter your life naturally and bring peaceful energy.
+
+Your relationship future also appears emotionally stable ✨. Your future partner may emotionally respect your calm nature, value loyalty, and bring emotional understanding instead of emotional stress 🤍. This connection may help your heart finally feel emotionally peaceful and mentally safe 🌷.
+
+However, your palm gently advises you not to suppress your emotions for too long 🌧️. Constantly staying emotionally silent may sometimes make others misunderstand your feelings. Your heart also deserves emotional support, understanding, and comfort 🌸.
+
+Overall, your future strongly shows emotional healing, peaceful growth, inner balance, supportive relationships, meaningful stability, and slow long-lasting happiness ✨🌙`;
+
+guidanceText=
+`Your calm emotional nature is one of your biggest strengths 🌙✨, but your palm gently reminds you that silently carrying emotional pain for too long may slowly exhaust your heart 🤍. Sometimes you may pretend everything is emotionally fine even when your mind quietly feels tired inside 🌧️.
+
+You naturally try avoiding conflict and protecting emotional peace 🌸, but constantly suppressing your emotions may slowly create emotional heaviness inside your heart. Your feelings deserve expression too ✨. You do not always need to stay emotionally strong for everyone.
+
+Your palm advises you to stop emotionally isolating yourself during difficult moments 🌙. Sharing your thoughts with trusted people may emotionally refresh your mind and reduce emotional stress 🤍. Healing becomes easier when your heart feels emotionally understood.
+
+Spend more time with emotionally calming things 🌷✨. Peaceful places, soft music 🎶, proper rest, self-care 🌸, supportive people, and emotionally safe environments may slowly help your energy feel lighter again ☕.
+
+Your palm also shows quiet spiritual wisdom ✨. Many difficult situations in your life may slowly transform you into a stronger, wiser, and emotionally calmer version of yourself 🌙. Do not rush your future. Some of the most beautiful changes happen slowly and peacefully 🤍.
+
+This phase of your life is teaching you emotional balance, patience, inner healing, and peaceful self-growth 🌸✨. Your future becomes brighter when your heart finally realizes that peace is not weakness — it is strength 💖`;
+
+}
+document.getElementById("auraText").innerHTML=
+aura;
+
+document.getElementById("identityText").innerHTML=
+"Palm Identity Signature: #" +
+Math.floor(Math.random()*9000+1000);
+
+setTimeout(()=>{
+
+document.getElementById("statusText").innerHTML=
+"✨ Palm successfully analyzed";
+
+showDefaultSection();
+
+},3000);
+
+}
+
+/* TABS */
+
+function showDefaultSection(){
+
+document.querySelectorAll(".tab-btn")
+.forEach(btn=>{
+btn.classList.remove("active");
+});
+
+document.querySelectorAll(".tab-btn")[0]
+.classList.add("active");
+
+typeEffect(personalityText);
+
+}
+
+function showSection(type,button){
+
+document.querySelectorAll(".tab-btn")
+.forEach(btn=>{
+btn.classList.remove("active");
+});
+
+button.classList.add("active");
+
+if(type==="personality"){
+
+typeEffect(personalityText);
+
+}
+
+else if(type==="future"){
+
+typeEffect(futureText);
+
+}
+
+else{
+
+typeEffect(guidanceText);
+
+}
+
+}
+
+/* PERFECT SAFE TYPING EFFECT */
+
+function typeEffect(text){
+
+const result =
+document.getElementById("resultText");
+
+result.innerHTML="";
+
+const tempDiv=document.createElement("div");
+tempDiv.innerHTML=text;
+
+const nodes=[...tempDiv.childNodes];
+
+let speed=22;
+
+function typeNode(node,parent){
+
+return new Promise(resolve=>{
+
+if(node.nodeType===3){
+
+let textContent=node.textContent;
+let i=0;
+
+const span=document.createElement("span");
+parent.appendChild(span);
+
+function typing(){
+
+if(i<textContent.length){
+
+span.textContent+=textContent.charAt(i);
+
+i++;
+
+result.parentElement.scrollTop=
+result.parentElement.scrollHeight;
+
+setTimeout(typing,speed);
+
+}
+
+else{
+
+resolve();
+
+}
+
+}
+
+typing();
+
+}
+
+else if(node.nodeType===1){
+
+const el=document.createElement(node.nodeName);
+
+parent.appendChild(el);
+
+(async()=>{
+
+for(let child of node.childNodes){
+
+await typeNode(child,el);
+
+}
+
+resolve();
+
+})();
+
+}
+
+});
+
+}
+
+(async()=>{
+
+for(let node of nodes){
+
+await typeNode(node,result);
+
+}
+
+})();
+
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && video.srcObject) {
+    video.play().catch(()=>{});
+  }
+});
+
+</script>
+</body>
+</html>
